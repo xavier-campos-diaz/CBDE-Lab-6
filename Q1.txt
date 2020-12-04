@@ -1,0 +1,70 @@
+SELECT l_returnflag, l_linestatus, 
+sum(l_quantity) as sum_qty,
+sum(l_extendedprice) as sum_base_price,
+sum(l_extendedprice*(1-l_discount)) as sum_disc_price,
+sum(l_extendedprice*(1-l_discount)*(1+l_tax)) as sum_charge, 
+avg(l_quantity) as avg_qty,
+avg(l_extendedprice) as avg_price, 
+avg(l_discount) as avg_disc, 
+count(*) as count_order
+FROM lineitem
+WHERE l_shipdate <= ’[date]’
+GROUP BY l_returnflag, l_linestatus
+ORDER BY l_returnflag, l_linestatus
+
+Required classes:
+    - lineitem
+    - order
+
+Possible distribution option:
+lineitem {
+    order_key,
+    quantity,
+    extendedprice,
+    discount,
+    tax,
+    shipdate,
+    returnflag,
+    linestatus
+}
+
+db.db_name.coll_name([ 
+    { 
+        { $match : { 
+            shipdate: { $gt: '[date]' } 
+            } 
+        }, 
+        { $project : { 
+            _id: 0, 
+            returnflag: 1,
+            linestatus: 1,
+            sum_qty: { $sum: "$quantity" },
+            sum_base_price: { $sum: "$extendedprice" },
+            sum_disc_price: { $multiply: [ sum_base_price, { 
+                $substract: [1, "$discount"] 
+            }]}, 
+            sum_charge: { $multiply: [ sum_disc_price, { 
+                $sum: [1, "$tax"]
+            }]}, 
+            avg_qty: { $avg: "$quantity"},
+            avg_price: { $avg: "$extendedprice"},
+            avg_disc: { $avg: "$discount"}
+        } },
+        {
+            $count : "count_order"
+        }, 
+        {
+            $group : {
+                returnflag : "$returnflag",
+                linestatus : "$linestatus"
+            }
+        }, 
+        {
+            $sort : {
+                returnflag : 1,
+                linestatus : 1
+            }
+        }
+
+    } 
+])
