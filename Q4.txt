@@ -1,0 +1,40 @@
+SELECT n_name, sum(l_extendedprice * (1 - l_discount)) as revenue
+FROM customer, orders, lineitem, supplier, nation, region
+WHERE c_custkey = o_custkey AND l_orderkey = o_orderkey
+AND l_suppkey = s_suppkey AND c_nationkey = s_nationkey
+AND s_nationkey = n_nationkey AND n_regionkey = r_regionkey
+AND r_name = ’[REGION]’ AND o_orderdate >= date ’[DATE]’
+AND o_orderdate < date ’[DATE]’ + interval ’1’ year
+GROUP BY n_name
+ORDER BY revenue desc;
+
+Partsupp {
+    obj-part {
+        partkey, Identifier
+        mfgr,    Text, 25
+        type,    Text, 25
+        size     Integer
+    }
+    obt_supp {
+        s_suppkey, Identifier
+        s_name,     Text 25
+        s_address   Text 40
+        s_phone     Text 15
+        s_acctbal  decimal
+        s_comment   text 101
+        n_name      Text 25
+        r_name      Text 25
+    }
+    ps_supplycost decimal
+}
+
+lineitem {
+    obj_order{}
+    quantity,
+    extendedprice,
+    discount,
+    tax,
+    shipdate,
+    returnflag,
+    linestatus
+}
