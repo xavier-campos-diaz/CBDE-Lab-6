@@ -10,11 +10,11 @@ lineitem {
     l_extendedprice,
     l_shipdate,
     obj-order {
-        order_key,
-        o_orderdate,
-        o_shippriority,
-        c_mktsegment, 
-        c_nationkey
+        order_key,      Ident
+        o_orderdate, Date
+        o_shippriority, Text 15
+        c_mktsegment,   text 10
+        c_nationkey     Ident, max 25
     }
 }
 
