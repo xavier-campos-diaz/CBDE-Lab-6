@@ -3,6 +3,7 @@ import numpy as np
 from pymongo import MongoClient
 import string
 import random
+import copy
 from datetime import datetime
 client = MongoClient('mongodb://localhost:27017/')
 dblists = client.list_database_names()
@@ -78,6 +79,7 @@ def initializeDB():
     collection.insert_many(posts)
 
 def execute_q1(date):
+    collection = db["LineItem"]
     results = collection.aggregate( [
     {
         '$match': {
@@ -157,7 +159,67 @@ def execute_q1(date):
 
 
 def execute_q2(p_size, p_type, r_name):
-    print("Not yet implemented")
+    collection = db["PartSupp"]
+    minCostPart = list(collection.aggregate([
+    {
+        '$match': {
+            'supplier.region_name': r_name
+        }
+    }, {
+        '$group': {
+            '_id': '$part._id', 
+            'minSupplyCost': {
+                '$min': '$supplycost'
+            }
+        }
+    }
+    ]))
+
+    partsSelection = collection.aggregate([
+    {
+        '$match': {
+            'part.size': p_size, 
+            'part.type': p_type, 
+            'supplier.region_name': r_name
+        }
+    }, {
+        '$project': {
+            '_id': 0, 
+            'supplier.acctbal': 1, 
+            'supplier.name': 1, 
+            'supplier.nation_name': 1, 
+            'part._id': 1, 
+            'part.mfgr': 1, 
+            'supplier.address': 1, 
+            'supplier.phone': 1, 
+            'supplier.comment': 1, 
+            'supplycost': 1
+        }
+    }, {
+        '$sort': {
+            'supplier.acctbal': -1, 
+            'supplier.nation_name': 1, 
+            'supplier.name': 1, 
+            'part._id': 1
+        }
+    }
+    ])
+
+    result = []
+    for ps in partsSelection:
+        part_id = ps['part']['_id']
+        supplycost = ps['supplycost']
+        for minPart in minCostPart:
+            min_id = minPart['_id']
+            minSC = minPart['minSupplyCost']
+            if part_id == min_id and supplycost == minSC:
+                aux = {"_id": part_id, "mfgr": ps['part']['mfgr'], "s_name": ps['supplier']['name'], "s_address": ps['supplier']['address'], 
+                        "s_phone": ps['supplier']['phone'], "s_acctbal": ps['supplier']['acctbal'], "s_comment": ps['supplier']['comment']}
+                result.append(aux)
+
+    for x in result:
+        print(x)
+
 
 def execute_q3():
     print("Not yet implemented")
