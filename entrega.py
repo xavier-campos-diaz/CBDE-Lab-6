@@ -24,8 +24,8 @@ def initializeDB():
     for i in range(200):
         order_key = np.random.randint(1, 20)
         order_date = datetime(np.random.randint(2000, 2020), np.random.randint(1, 12), np.random.randint(1, 27))
-        order_shippriority = random.choice(string.ascii_uppercase)*15
-        customer_mkt_seg = random.choice(string.ascii_uppercase)*10
+        order_shippriority = random.choice(["Urgent", "Non-urgent", "Returning", "Express"])
+        customer_mkt_seg = random.choice(["Vip", "New", "Returning", "Single", "Married", "Female", "Male", "Graduated", "Employed", "Unemployed"])
         customer_nation_key = np.random.randint(1, 25)
         order = {"_id": order_key, "order_date": order_date, "shippriority": order_shippriority, "c_mktsegment": customer_mkt_seg, "c_nationkey": customer_nation_key}
         quantity = float(np.random.randint(1, 5))
@@ -33,8 +33,8 @@ def initializeDB():
         discount = float(np.random.randint(0, 65)/100)
         tax = float(random.choice([4,10,21])/100)
         shipdate = datetime(np.random.randint(2000, 2020), np.random.randint(1, 12), np.random.randint(1, 27))
-        returnflag = random.choice(string.ascii_uppercase)
-        linestatus = random.choice(string.ascii_uppercase)
+        returnflag = random.choice(["W", "I", "D", "R"])
+        linestatus = random.choice(["C", "E", "U", "P"])
         posts.append({"_id":i, "order": order, "quantity": quantity, "extendedprice": extendedprice, 
                     "discount": discount, "tax": tax, "shipdate": shipdate, "returnflag": returnflag, "linestatus": linestatus})
 
@@ -42,26 +42,39 @@ def initializeDB():
 
     collection = db["PartSupp"]
     posts = []
-    for i in range(200):
+    parts = []
+    suppliers = []
+    for j in range(20):
         ps_supplycost = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
-        p_key = np.random.randint(1, 20)
-        p_mfgr = random.choice(string.ascii_uppercase)*25
-        p_type = random.choice(string.ascii_uppercase)*25
+        p_key = j
+        p_mfgr = random.choice(["Bing Steel", "Crucible Industries", "Doral Steel Inc", "Eco Steel LLC", "Gary Works", "Republic Steel", "U.S. Steel", "United Steel Corp", "Pittsburgh Steel"])
+        p_type = random.choice(["Mecanism", "Microchip", "Structure", "Engine"] )
         p_size = np.random.randint(1, 50)
         part = {"_id": p_key, "mfgr": p_mfgr, "type": p_type, "size": p_size}
+        parts.append(part)
 
-        s_suppkey = np.random.randint(1, 20)
-        s_name = random.choice(string.ascii_uppercase)*25
-        s_address = random.choice(string.ascii_uppercase)*40
-        s_phone = random.choice(string.ascii_uppercase)*15
+    for j in range(8):
+        s_suppkey = j
+        s_name = ["Analog Inc.", "Amphenol Corp.", "Boyd Corp.", "Cheng Corp.", "Compal Elect", "Dexerials Corp.", "Fujikura Ltd.", "HI-P Ltd." ][j]
+        s_address = ["Unnamed Road, ", "Industry Avn, ", "Random Plaza, ", "Invented Road, ", "Totally Real Avn, ", "My House Street, ", "Existing Road, ", "Not Fake Plaza, "][j] + str(np.random.randint(0, 175))
+        s_phone = str(np.random.randint(0, 999999999))
         s_acctbal = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
-        s_comment = random.choice(string.ascii_uppercase)*101
-        n_name = random.choice(string.ascii_uppercase)*25
-        r_name = random.choice(string.ascii_uppercase)*25
-        supplier = {"_id": s_suppkey, "name": s_name, "address": s_address, "phone": s_phone, "acctbal": s_acctbal, "comment": s_comment, "nation_name": n_name, "region_name": r_name}
-        PartSupp = {"_id": i, "part": part, "supplier": supplier, "supplycost": ps_supplycost}
-        posts.append(PartSupp)
+        s_comment = random.choice(["Reliable", "Unreliable", "Always on time", "Rude employees", "Bad Customer Service", "Average", "Good price-quality relation", "Greedy directionship" ])
         
+        n_nationkey = int(np.random.randint(0, 25))
+        nations = ["Spain", "Germany", "Sweden", "Russia", "France", "USA", "Canada", "Mexico", "Peru", "Brazil", "China", "Thailand", "Japan", "Vietnam", "India", "Angola", "Morroco", "South Africa", "Kenya", "Uganda", "Australia", "New Zeland", "Tonga", "Fiji", "Samoa"]
+        regions = ["Europe", "America", "Asia", "Africa", "Oceania"]
+        n_name = nations[n_nationkey]
+        r_name = regions[int(n_nationkey/5)]
+        supplier = {"_id": s_suppkey, "name": s_name, "address": s_address, "phone": s_phone, "acctbal": s_acctbal, "comment": s_comment, "nation_key": n_nationkey, "nation_name": n_name, "region_name": r_name}
+        suppliers.append(supplier)
+
+    for i in range(200):
+        supp_int = int(np.random.randint(0, 8))
+        part_int = int(np.random.randint(0, 20))
+        PartSupp = {"_id": i, "part": parts[part_int], "supplier": suppliers[supp_int], "supplycost": ps_supplycost}
+        posts.append(PartSupp)
+       
     collection.insert_many(posts)
 
 def execute_q1(date):

@@ -23,6 +23,7 @@ Partsupp {
         s_acctbal  decimal
         s_comment   text 101
         n_name      Text 25
+        n_nationkey Identifier
         r_name      Text 25
     }
     ps_supplycost decimal

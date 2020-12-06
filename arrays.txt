@@ -1,0 +1,15 @@
+mkt_segments = ["Vip", "New", "Returning", "Single", "Married", "Female, "Male", "Graduated", "Employed", "Unemployed"]
+
+nations = ["Spain", "Germany", "Sweden", "Russia", "France", "USA", "Canada", "Mexico", "Peru, "Brazil" "China", "Thailand", "Japan", "Vietnam", "India", "Angola", "Morroco", "South Africa", "Kenya", "Uganda", "Australia", "New Zeland", "Tonga", "Fiji", "Samoa"]
+regions = ["Europe", "America, "Asia, "Africa", "Oceania"]
+
+shippriority = ["Urgent", "Non-urgent", "Returning", "Express"] == urgent, non-urgent, return, express
+returnflag = ["W", "I", "D", "R"] == warehouse, in_Delivery, delivered, returned
+linestatus = ["C", "E", "U", "P"] == checked, error, unchecked, paid
+
+mfgr = ["Bing Steel", "Crucible Industries", "Doral Steel Inc", "Eco Steel LLC", "Gary Works", "Republic Steel", "U.S. Steel", "United Steel Corp", "Pittsburgh Steel"]
+type = ["Stockist", "Distributor", "Manufacturer", "Subcontractor"] 
+
+s_name = ["Analog Inc.", "Amphenol Corp.", "Boyd Corp.", "Cheng Corp.", "Compal Elect", "Dexerials Corp.", "Fujikura Ltd.", "HI-P Ltd."]
+s_address = ["Unnamed Road, X", "Industry Avn, X", "Random Plaza, X", "Invented Road, X", "Totally Real Avn, X", "My House Street, X"]
+    
