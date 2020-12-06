@@ -45,18 +45,22 @@ def initializeDB():
     posts = []
     parts = []
     suppliers = []
-    for j in range(20):
+    for j in range(30):
         p_key = j
-        p_mfgr = random.choice(["Bing Steel", "Crucible Industries", "Doral Steel Inc", "Eco Steel LLC", "Gary Works", "Republic Steel", "U.S. Steel", "United Steel Corp", "Pittsburgh Steel"])
+        p_mfgr = random.choice(["Bing Steel", "Crucible Industries", "Doral Steel Inc", "Eco Steel LLC", "Gary Works", "Republic Steel", "U.S. Steel", 
+                                "United Steel Corp", "Pittsburgh Steel", "Volkswagen Group", "Daimler", "3 ABC LASURES", "A Bianchini Ingeniero SA",
+                                "LORENZO BARROSO SA", "Abasic SL", "Abello Linde SA", "Aceros para la Construcción SA", "Zoetis Inc"])
         p_type = random.choice(["Mechanism", "Microchip", "Structure", "Engine"] )
-        p_size = np.random.randint(1, 50)
+        p_size = np.random.randint(15, 30)
         part = {"_id": p_key, "mfgr": p_mfgr, "type": p_type, "size": p_size}
         parts.append(part)
 
-    for j in range(8):
+    for j in range(20):
         s_suppkey = j
-        s_name = ["Analog Inc.", "Amphenol Corp.", "Boyd Corp.", "Cheng Corp.", "Compal Elect", "Dexerials Corp.", "Fujikura Ltd.", "HI-P Ltd." ][j]
-        s_address = ["Unnamed Road, ", "Industry Avn, ", "Random Plaza, ", "Invented Road, ", "Totally Real Avn, ", "My House Street, ", "Existing Road, ", "Not Fake Plaza, "][j] + str(np.random.randint(0, 175))
+        s_name = ["Analog Inc.", "Amphenol Corp.", "Boyd Corp.", "Cheng Corp.", "Compal Elect", "Dexerials Corp.", "Fujikura Ltd.", "HI-P Ltd.", 
+                "VERTEX GMBH", "HARDFORD AB", "Siemens", "Bosch", "Enel", "Hitachi", "IBM", "Panasonic", "PepsiCo", "Renault", "Bayer", "Pfizer"][j]
+        s_address = ["Unnamed Road, ", "Industry Avn, ", "Random Plaza, ", "Invented Road, ", "Totally Real Avn, ", "My House Street, ", 
+                "Existing Road, ", "Not Fake Plaza, ", "Really Nice Street, ", "Actually a Road, "][j%10] + str(np.random.randint(0, 175))
         s_phone = str(np.random.randint(0, 999999999))
         s_acctbal = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
         s_comment = random.choice(["Reliable", "Unreliable", "Always on time", "Rude employees", "Bad Customer Service", "Average", "Good price-quality relation", "Greedy directionship" ])
@@ -69,12 +73,13 @@ def initializeDB():
         supplier = {"_id": s_suppkey, "name": s_name, "address": s_address, "phone": s_phone, "acctbal": s_acctbal, "comment": s_comment, "nation_key": n_nationkey, "nation_name": n_name, "region_name": r_name}
         suppliers.append(supplier)
 
-    for i in range(200):
-        supp_int = int(np.random.randint(0, 8))
-        part_int = int(np.random.randint(0, 20))
-        ps_supplycost = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
-        PartSupp = {"_id": i, "part": parts[part_int], "supplier": suppliers[supp_int], "supplycost": ps_supplycost}
-        posts.append(PartSupp)
+    counter = 0
+    for i in range(len(suppliers)):
+        for j in range(len(parts)):
+            ps_supplycost = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
+            PartSupp = {"_id": counter, "part": parts[j], "supplier": suppliers[i], "supplycost": ps_supplycost}
+            posts.append(PartSupp)
+            counter += 1
        
     collection.insert_many(posts)
 
@@ -154,6 +159,7 @@ def execute_q1(date):
         }
     }
 ])
+    print("")
     for x in results:
         print(x)
 
@@ -217,6 +223,7 @@ def execute_q2(p_size, p_type, r_name):
                         "s_phone": ps['supplier']['phone'], "s_acctbal": ps['supplier']['acctbal'], "s_comment": ps['supplier']['comment']}
                 result.append(aux)
 
+    print("")
     for x in result:
         print(x)
 
@@ -238,7 +245,7 @@ if __name__ == "__main__":
             day = int(input("Enter the day: "))
             execute_q1(datetime(year, month, day))
         elif (value == 2):
-            p_size = int(input("Enter the part size (integer from 0 to 50): "))
+            p_size = int(input("Enter the part size (integer from 15 to 30): "))
             p_type = input("Enter the part type, select one from the following: Mechanism, Microchip, Structure or Engine: ")
             r_name = input("Enter the region name, select one from the following: Europe, America, Asia, Africa or Oceania: ")
             execute_q2(p_size, p_type, r_name)
