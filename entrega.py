@@ -45,7 +45,6 @@ def initializeDB():
     parts = []
     suppliers = []
     for j in range(20):
-        ps_supplycost = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
         p_key = j
         p_mfgr = random.choice(["Bing Steel", "Crucible Industries", "Doral Steel Inc", "Eco Steel LLC", "Gary Works", "Republic Steel", "U.S. Steel", "United Steel Corp", "Pittsburgh Steel"])
         p_type = random.choice(["Mechanism", "Microchip", "Structure", "Engine"] )
@@ -72,6 +71,7 @@ def initializeDB():
     for i in range(200):
         supp_int = int(np.random.randint(0, 8))
         part_int = int(np.random.randint(0, 20))
+        ps_supplycost = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
         PartSupp = {"_id": i, "part": parts[part_int], "supplier": suppliers[supp_int], "supplycost": ps_supplycost}
         posts.append(PartSupp)
        
