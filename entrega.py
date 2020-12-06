@@ -48,7 +48,7 @@ def initializeDB():
         ps_supplycost = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
         p_key = j
         p_mfgr = random.choice(["Bing Steel", "Crucible Industries", "Doral Steel Inc", "Eco Steel LLC", "Gary Works", "Republic Steel", "U.S. Steel", "United Steel Corp", "Pittsburgh Steel"])
-        p_type = random.choice(["Mecanism", "Microchip", "Structure", "Engine"] )
+        p_type = random.choice(["Mechanism", "Microchip", "Structure", "Engine"] )
         p_size = np.random.randint(1, 50)
         part = {"_id": p_key, "mfgr": p_mfgr, "type": p_type, "size": p_size}
         parts.append(part)
@@ -156,7 +156,7 @@ def execute_q1(date):
         print(x)
 
 
-def execute_q2():
+def execute_q2(p_size, p_type, r_name):
     print("Not yet implemented")
 
 def execute_q3():
@@ -171,12 +171,15 @@ if __name__ == "__main__":
     value = printOptions()
     while (value != -1):
         if (value == 1):
-            year = int(input("Enter the year "))
-            month = int(input("Enter the month "))
-            day = int(input("Enter the day "))
+            year = int(input("Enter the year: "))
+            month = int(input("Enter the month: "))
+            day = int(input("Enter the day: "))
             execute_q1(datetime(year, month, day))
         elif (value == 2):
-            execute_q2()
+            p_size = int(input("Enter the part size (integer from 0 to 50): "))
+            p_type = input("Enter the part type, select one from the following: Mechanism, Microchip, Structure or Engine: ")
+            r_name = input("Enter the region name, select one from the following: Europe, America, Asia, Africa or Oceania: ")
+            execute_q2(p_size, p_type, r_name)
         elif (value == 3):
             execute_q3()
         elif (value == 4):
