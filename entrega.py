@@ -22,7 +22,7 @@ def initializeDB():
     print("Initializing DB!")
     posts = []
     collection = db["LineItem"]
-    for i in range(200):
+    for i in range(600):
         order_key = np.random.randint(1, 20)
         order_date = datetime(np.random.randint(2000, 2020), np.random.randint(1, 12), np.random.randint(1, 27))
         order_shippriority = random.choice(["Urgent", "Non-urgent", "Returning", "Express"])
@@ -228,12 +228,128 @@ def execute_q2(p_size, p_type, r_name):
         print(x)
 
 
-def execute_q3():
-    print("Not yet implemented")
+def execute_q3(c_mkt, date_1, date_2):
+    collection = db["LineItem"]
+    result = collection.aggregate([
+    {
+        '$match': {
+            'order.c_mktsegment': c_mkt, 
+            'order.order_date': {
+                '$lt': date_1
+            }, 
+            'shipdate': {
+                '$gt': date_2
+            }
+        }
+    }, {
+        '$addFields': {
+            'percDisc': {
+                '$subtract': [
+                    1, '$discount'
+                ]
+            }
+        }
+    }, {
+        '$addFields': {
+            'discountedPrice': {
+                '$multiply': [
+                    '$extendedprice', '$percDisc'
+                ]
+            }
+        }
+    }, {
+        '$group': {
+            '_id': {
+                'order_key': '$order._id', 
+                'order_date': '$order.order_date', 
+                'shippriority': '$order.shippriority'
+            }, 
+            'revenue': {
+                '$sum': '$discountedPrice'
+            }
+        }
+    }, {
+        '$sort': {
+            'revenue': -1, 
+            'order.order_date': 1
+        }
+    }
+    ])
 
-def execute_q4():
-    print("Not yet implemented")
+    print("")
+    for x in result:
+        print(x)
 
+def execute_q4(r_name, date):
+    collection = db["LineItem"]
+    nations_revenue = list(collection.aggregate([
+    {
+        '$addFields': {
+            'percDisc': {
+                '$subtract': [
+                    1, '$discount'
+                ]
+            }
+        }
+    }, {
+        '$addFields': {
+            'discountedPrice': {
+                '$multiply': [
+                    '$extendedprice', '$percDisc'
+                ]
+            }
+        }
+    }, {
+        '$match': {
+            'order.order_date': {
+                '$gte': date
+            }, 
+            'order.order_date': {
+                '$lt': date.replace( year = date.year + 1)
+            }
+        }
+    }, {
+        '$group': {
+            '_id': '$order.c_nationkey', 
+            'revenue': {
+                '$sum': '$discountedPrice'
+            }
+        }
+    }, {
+        '$sort': {
+            'revenue': -1
+        }
+    }]))
+
+    collection = db["PartSupp"]
+    supplier_nations = list(collection.aggregate([
+    {
+        '$match': {
+            'supplier.region_name': r_name
+        }
+    }, {
+        '$group': {
+            '_id': {
+                's_nationkey': '$supplier.nation_key', 
+                's_nationname': '$supplier.nation_name'
+            }
+        }
+    }
+    ]))
+
+    result = []
+    for nation in nations_revenue:
+        nr_key = nation["_id"]
+        for s_nation in supplier_nations:
+            sn_key = s_nation["_id"]["s_nationkey"]
+            if (nr_key == sn_key):
+                aux = {"nation_name": s_nation["_id"]["s_nationname"], "revenue": nation["revenue"]}
+                result.append(aux)
+    
+    print("")
+    for x in result:
+        print(x)
+    
 if __name__ == "__main__":
     if ("TPC-H" not in dblists):
         initializeDB() 
@@ -250,11 +366,20 @@ if __name__ == "__main__":
             r_name = input("Enter the region name, select one from the following: Europe, America, Asia, Africa or Oceania: ")
             execute_q2(p_size, p_type, r_name)
         elif (value == 3):
-            execute_q3()
+            c_mkt = input("Enter the customer market segments, select one from the following: Vip, New, Returning, Single, Married, Female, Male, Graduated, Employed or Unemployed: ")
+            year_1 = int(input("Enter the year for date 1: "))
+            month_1 = int(input("Enter the month for date 1: "))
+            day_1 = int(input("Enter the day for date 1: "))
+            year_2 = int(input("Enter the year for date 2: "))
+            month_2 = int(input("Enter the month for date 2: "))
+            day_2 = int(input("Enter the day for date 2: "))
+            execute_q3(c_mkt, datetime(year_1, month_1, day_1), datetime(year_2, month_2, day_2))
         elif (value == 4):
-            min_age = int(input("Minimum age "))
-            max_age = int(input("Maximum age "))
-            execute_q4()
+            year = int(input("Enter the year: "))
+            month = int(input("Enter the month: "))
+            day = int(input("Enter the day: "))
+            r_name = input("Enter the region name, select one from the following: Europe, America, Asia, Africa or Oceania: ")
+            execute_q4(r_name, datetime(year, month, day))
         print("\n")
         value = printOptions()
     print("Goodbye!")

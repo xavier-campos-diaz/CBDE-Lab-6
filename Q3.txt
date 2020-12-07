@@ -4,7 +4,7 @@ WHERE c_mktsegment = ’[SEGMENT]’ AND c_custkey = o_custkey AND l_orderkey = 
 AND o_orderdate < ’[DATE1]’ AND l_shipdate > ’[DATE2]’
 GROUP BY l_orderkey, o_orderdate, o_shippriority
 ORDER BY revenue desc, o_orderdate;
-
+    
 lineitem {
     l_discount,
     l_extendedprice,
@@ -13,8 +13,12 @@ lineitem {
         order_key,      Ident
         o_orderdate, Date
         o_shippriority, Text 15
-        c_mktsegment,   text 10
-        c_nationkey     Ident, max 25
+        obj-customer {
+            c_mktsegment,   text 10
+            c_nationame, 
+            c_region_name,
+            c_nationkey     Ident, max 25
+        }
     }
 }
 
