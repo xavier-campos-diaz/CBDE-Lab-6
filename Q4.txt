@@ -10,23 +10,23 @@ ORDER BY revenue desc;
 
 Partsupp {
     obj-part {
-        partkey, Identifier
-        mfgr,    Text, 25
-        type,    Text, 25
-        size     Integer
+        partkey, 
+        mfgr,    
+        type,    
+        size     
     }
     obt_supp {
-        s_suppkey, Identifier
-        s_name,     Text 25
-        s_address   Text 40
-        s_phone     Text 15
-        s_acctbal  decimal
-        s_comment   text 101
-        n_name      Text 25
-        n_nationkey Identifier
-        r_name      Text 25
+        s_suppkey, 
+        s_name,     
+        s_address    
+        s_phone      
+        s_acctbal  
+        s_comment    
+        n_name       
+        n_nationkey 
+        r_name       
     }
-    ps_supplycost decimal
+    ps_supplycost 
 }
 
 lineitem {

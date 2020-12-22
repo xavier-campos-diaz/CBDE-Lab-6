@@ -6,19 +6,19 @@ GROUP BY l_orderkey, o_orderdate, o_shippriority
 ORDER BY revenue desc, o_orderdate;
     
 lineitem {
-    l_discount,
-    l_extendedprice,
-    l_shipdate,
+    quantity,
+    extendedprice,
+    discount,
+    tax,
+    shipdate,
+    returnflag,
+    linestatus
     obj-order {
         order_key,      Ident
         o_orderdate, Date
         o_shippriority, Text 15
-        obj-customer {
-            c_mktsegment,   text 10
-            c_nationame, 
-            c_region_name,
-            c_nationkey     Ident, max 25
-        }
+        c_mktsegment,   text 10
+        c_nationkey     Ident, max 25
     }
 }
 

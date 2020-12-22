@@ -1,6 +1,6 @@
 # CBDE-Lab 6
 
 ## Xavier Campos Diaz
-## Pau Ruiz Escobar
+## Marc Simó Guzman
 
 Repository for the sixth laboratory assignment of CBDE
