@@ -5,7 +5,7 @@ from datetime import datetime
 from neo4j import GraphDatabase, basic_auth
 db = GraphDatabase.driver("bolt://localhost", auth=basic_auth("neo4j", "neo4j"))
 session = db.session()
-
+    
 def printOptions():
     print("Enter 1 to execute query 1")
     print("Enter 2 to execute query 2")
@@ -14,48 +14,40 @@ def printOptions():
     print("Enter -1 to exit this program")
     return int(input("What do you want to do? "))
 
+def createPart(identifier, partkey, mfgr, type, size):
+    session.run("CREATE (" + identifier + ":Part {partkey:'" + partkey +
+                "', mfgr:'" + mfgr + "', type: '" + type + "', size: " + size + "})")
+
+def createSupplier(identifier, suppkey, name, address, phone, acctbal, comment, n_name, r_name):
+    session.run("CREATE (" + identifier + ":Supplier {suppkey: '" + suppkey +
+                "', name: '" + name + "', address: '" + address +
+                "', phone: '" + phone + "', acctbal: '" + acctbal + "', comment: '" + comment +
+                "', n_name: '" + n_name + "', r_name: '" + r_name + "'})")
+
+def create_order(identifier, orderkey, orderdate, shippriority, c_marketsegment, n_name):
+    session.run("CREATE (" + identifier + ":Order {orderkey: '" + orderkey + "', orderdate: '" + orderdate + "', shippriority:'" +
+                shippriority + "', c_marketsegment: '" + c_marketsegment + "', n_name: '" + n_name + "'})")
+
+def createLineitem(identifier, orderkey, suppkey, quantity, extendedPrice, 
+                    discount, tax, returnflag, linestatus, shipdate):
+    session.run("CREATE (" + identifier + ":LineItem {orderkey: '" + orderkey +
+                "', suppkey: '" + suppkey + "', quantity: '" + quantity + "', extendedPrice: '" + extendedPrice + "', discount: '" + discount + 
+                "', tax: '" + tax  +  "', returnflag: '" + returnflag + "', linestatus: '" + linestatus + "', shipdate: '" + shipdate + "'})")
+
 def initializeDB():
-    print("Not implemented")
-
-def initializeDB1():
     print("Initializing DB!")
-    posts = []
-    collection = db["LineItem"]
-    for i in range(600):
-        order_key = np.random.randint(1, 20)
-        order_date = datetime(np.random.randint(2000, 2020), np.random.randint(1, 12), np.random.randint(1, 27))
-        order_shippriority = random.choice(["Urgent", "Non-urgent", "Returning", "Express"])
-        customer_mkt_seg = random.choice(["Vip", "New", "Returning", "Single", "Married", "Female", "Male", "Graduated", "Employed", "Unemployed"])
-        customer_nation_key = np.random.randint(1, 25)
-        order = {"_id": order_key, "order_date": order_date, "shippriority": order_shippriority, "c_mktsegment": customer_mkt_seg, "c_nationkey": customer_nation_key}
-        quantity = float(np.random.randint(1, 5))
-        extendedprice = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
-        discount = float(np.random.randint(0, 65)/100)
-        tax = float(random.choice([4,10,21])/100)
-        shipdate = datetime(np.random.randint(2000, 2020), np.random.randint(1, 12), np.random.randint(1, 27))
-        returnflag = random.choice(["W", "I", "D", "R"])
-        linestatus = random.choice(["C", "E", "U", "P"])
-        posts.append({"_id":i, "order": order, "quantity": quantity, "extendedprice": extendedprice, 
-                    "discount": discount, "tax": tax, "shipdate": shipdate, "returnflag": returnflag, "linestatus": linestatus})
 
-    collection.insert_many(posts)
-
-    collection = db["PartSupp"]
-    posts = []
-    parts = []
-    suppliers = []
     for j in range(30):
-        p_key = j
+        p_ident = "p" + str(j)
         p_mfgr = random.choice(["Bing Steel", "Crucible Industries", "Doral Steel Inc", "Eco Steel LLC", "Gary Works", "Republic Steel", "U.S. Steel", 
                                 "United Steel Corp", "Pittsburgh Steel", "Volkswagen Group", "Daimler", "3 ABC LASURES", "A Bianchini Ingeniero SA",
                                 "LORENZO BARROSO SA", "Abasic SL", "Abello Linde SA", "Aceros para la Construcción SA", "Zoetis Inc"])
         p_type = random.choice(["Mechanism", "Microchip", "Structure", "Engine"] )
         p_size = np.random.randint(15, 30)
-        part = {"_id": p_key, "mfgr": p_mfgr, "type": p_type, "size": p_size}
-        parts.append(part)
+        createPart(p_ident, str(j), p_mfgr, p_type, str(p_size))
 
     for j in range(20):
-        s_suppkey = j
+        s_ident = "s" + str(j)
         s_name = ["Analog Inc.", "Amphenol Corp.", "Boyd Corp.", "Cheng Corp.", "Compal Elect", "Dexerials Corp.", "Fujikura Ltd.", "HI-P Ltd.", 
                 "VERTEX GMBH", "HARDFORD AB", "Siemens", "Bosch", "Enel", "Hitachi", "IBM", "Panasonic", "PepsiCo", "Renault", "Bayer", "Pfizer"][j]
         s_address = ["Unnamed Road, ", "Industry Avn, ", "Random Plaza, ", "Invented Road, ", "Totally Real Avn, ", "My House Street, ", 
@@ -69,18 +61,31 @@ def initializeDB1():
         regions = ["Europe", "America", "Asia", "Africa", "Oceania"]
         n_name = nations[n_nationkey]
         r_name = regions[int(n_nationkey/5)]
-        supplier = {"_id": s_suppkey, "name": s_name, "address": s_address, "phone": s_phone, "acctbal": s_acctbal, "comment": s_comment, "nation_key": n_nationkey, "nation_name": n_name, "region_name": r_name}
-        suppliers.append(supplier)
+        createSupplier(s_ident, str(j), s_name, s_address, str(s_phone), str(s_acctbal), s_comment, n_name, r_name)
+    
+    for i in range(20):
+        order_ident = "o" + str(i)
+        order_date = datetime(np.random.randint(2000, 2020), np.random.randint(1, 12), np.random.randint(1, 27))
+        order_shippriority = random.choice(["Urgent", "Non-urgent", "Returning", "Express"])
+        customer_mkt_seg = random.choice(["Vip", "New", "Returning", "Single", "Married", "Female", "Male", "Graduated", "Employed", "Unemployed"])
+        n_nationkey = int(np.random.randint(0, 25))
+        nations = ["Spain", "Germany", "Sweden", "Russia", "France", "USA", "Canada", "Mexico", "Peru", "Brazil", "China", "Thailand", "Japan", "Vietnam", "India", "Angola", "Morroco", "South Africa", "Kenya", "Uganda", "Australia", "New Zeland", "Tonga", "Fiji", "Samoa"]
+        n_name = nations[n_nationkey]
+        create_order(order_ident, str(i), str(order_date), order_shippriority, customer_mkt_seg, n_name)
 
-    counter = 0
-    for i in range(len(suppliers)):
-        for j in range(len(parts)):
-            ps_supplycost = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
-            PartSupp = {"_id": counter, "part": parts[j], "supplier": suppliers[i], "supplycost": ps_supplycost}
-            posts.append(PartSupp)
-            counter += 1
-       
-    collection.insert_many(posts)
+    for i in range(200):
+        order_key = np.random.randint(1, 20)
+        supp_key = np.random.randint(1, 20)
+        l_ident = "l" + str(i)
+        quantity = float(np.random.randint(1, 5))
+        extendedprice = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
+        discount = float(np.random.randint(0, 65)/100)
+        tax = float(random.choice([4,10,21])/100)
+        shipdate = datetime(np.random.randint(2000, 2020), np.random.randint(1, 12), np.random.randint(1, 27))
+        returnflag = random.choice(["W", "I", "D", "R"])
+        linestatus = random.choice(["C", "E", "U", "P"])
+        createLineitem(l_ident, str(order_key), str(supp_key), str(quantity), str(extendedprice), str(discount), str(tax), str(returnflag), str(linestatus), str(shipdate))
+
 
 def execute_q1(date):
     print("Not implemented")
