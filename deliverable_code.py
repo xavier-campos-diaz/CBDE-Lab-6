@@ -129,8 +129,12 @@ def execute_q1(date):
             "AVG(l.extendedPrice) as avg_price, AVG(l.discount) as avg_disc, count(*) as count_order " +  
         "ORDER BY l.returnflag, l.linestatus")
 
+    counter = 0
     for item in results:
+        counter += 0
         print(item)
+    if counter == 0:
+        print("No nodes found")
 
 def execute_q2(p_size, p_type, r_name):
     print("Not implemented")
@@ -143,19 +147,28 @@ def execute_q3(c_mkt, date_1, date_2):
         "ORDER BY revenue DESC, o.orderdate"
     )
 
+    counter = 0
     for item in results:
+        counter += 0
         print(item)
+    if counter == 0:
+        print("No nodes found")
 
 def execute_q4(r_name, date):
     results = session.run(
         "MATCH (o:Order)-[:contains]->(l:LineItem)-[:suppliedBy]->(s:Supplier) " + 
-        "WHERE (s.r_name = '" + r_name + "' AND o.orderdate >= '" + str(date) + "' AND o.orderdate < '" + str(date.replace( year = date.year + 1)) + "') " + 
+        "WHERE (s.r_name = '" + r_name + "' AND o.orderdate >= '" + str(date) + 
+        "' AND o.orderdate < '" + str(date.replace( year = date.year + 1)) + "' AND s.n_name = o.n_name) " + 
         "RETURN o.n_name as n_name, SUM(l.extendedPrice*(1-l.discount)) as revenue " + 
         "ORDER BY revenue DESC"
     )
 
+    counter = 0
     for item in results:
+        counter += 0
         print(item)
+    if counter == 0:
+        print("No nodes found")
     
 def isDbEmpty():
     for item in session.run('MATCH (n) RETURN 1 LIMIT 1'):
