@@ -18,12 +18,29 @@ Required classes:
 
 Possible distribution option:
 lineitem {
-    order_key,
     quantity,
     extendedprice,
     discount,
     tax,
     shipdate,
     returnflag,
-    linestatus
+    linestatus,
+    
+    
+    customer {
+        cust_key,
+        mkt_segment
+    }
+    
+    order {
+        order_key,  identifier
+        order_date,  date
+        ship_priority  integer
+    }
+    nation {
+        name,
+        region {
+            name
+        }
+    }
 }

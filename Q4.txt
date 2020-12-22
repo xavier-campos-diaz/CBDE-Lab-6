@@ -8,34 +8,27 @@ AND o_orderdate < date ’[DATE]’ + interval ’1’ year
 GROUP BY n_name
 ORDER BY revenue desc;
 
-Partsupp {
-    obj-part {
-        partkey, 
-        mfgr,    
-        type,    
-        size     
-    }
-    obt_supp {
-        s_suppkey, 
-        s_name,     
-        s_address    
-        s_phone      
-        s_acctbal  
-        s_comment    
-        n_name       
-        n_nationkey 
-        r_name       
-    }
-    ps_supplycost 
-}
-
 lineitem {
-    obj_order{}
     quantity,
     extendedprice,
     discount,
     tax,
     shipdate,
     returnflag,
-    linestatus
+    linestatus,
+    customer {
+        cust_key,
+        mkt_segment
+    }
+    order {
+        order_key,  identifier
+        order_date,  date
+        ship_priority  integer
+    }
+    nation {
+        name,
+        region {
+            name
+        }
+    }
 }

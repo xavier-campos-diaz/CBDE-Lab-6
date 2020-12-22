@@ -34,6 +34,19 @@ def createLineitem(identifier, orderkey, suppkey, quantity, extendedPrice,
                 "', suppkey: '" + suppkey + "', quantity: '" + quantity + "', extendedPrice: '" + extendedPrice + "', discount: '" + discount + 
                 "', tax: '" + tax  +  "', returnflag: '" + returnflag + "', linestatus: '" + linestatus + "', shipdate: '" + shipdate + "'})")
 
+def create_edge_supplier_part(supplier, suppkey, part, partkey, supplycost):
+    session.run(
+        "MATCH (" + supplier + ":Supplier {suppkey: '" + suppkey + "'}), (" + part + ":Part {partkey: '" + partkey +
+        "'}) CREATE (" + supplier + ")-[:partSupplier {supplycost: '" + supplycost + "'}]->(" + part + ")")
+
+def create_edge_order_lineitem(order, orderkey, lineitem):
+    session.run("MATCH (" + order + ":Order {orderkey: '" + orderkey + "'}), (" + lineitem +
+                ":LineItem {orderkey: '" + orderkey + "'}) CREATE (" + order + ")-[:contains]->(" + lineitem + ")")
+
+def create_edge_lineitem_supplier(supplier, suppkey, lineitem):
+    session.run("MATCH (" + lineitem + ":LineItem {suppkey: '" + suppkey + "'}), (" + supplier +
+                ":Supplier {suppkey: '" + suppkey + "'}) CREATE (" + lineitem + ")-[:suppliedBy]->(" + supplier + ")")
+
 def initializeDB():
     print("Initializing DB!")
 
@@ -74,8 +87,8 @@ def initializeDB():
         create_order(order_ident, str(i), str(order_date), order_shippriority, customer_mkt_seg, n_name)
 
     for i in range(200):
-        order_key = np.random.randint(1, 20)
-        supp_key = np.random.randint(1, 20)
+        order_key = np.random.randint(20)
+        supp_key = np.random.randint(20)
         l_ident = "l" + str(i)
         quantity = float(np.random.randint(1, 5))
         extendedprice = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
@@ -86,6 +99,24 @@ def initializeDB():
         linestatus = random.choice(["C", "E", "U", "P"])
         createLineitem(l_ident, str(order_key), str(supp_key), str(quantity), str(extendedprice), str(discount), str(tax), str(returnflag), str(linestatus), str(shipdate))
 
+    for i in range(20):
+        s_ident = "s" + str(i)
+        for j in range(3):
+            part_key = i + j
+            p_ident = "p" + str(part_key)
+            supplycost = float(np.random.randint(5, 1500) + np.random.randint(0, 99)/100)
+            create_edge_supplier_part(s_ident, str(i), p_ident, str(part_key), str(supplycost))
+
+    for i in range(20):
+        l_ident = 'l' + str(i)
+        order_ident = "o" + str(i)
+        create_edge_order_lineitem(order_ident, str(i), l_ident)
+
+    for i in range(20):
+        l_ident = 'l' + str(i)
+        supp_ident = "s" + str(i)
+        create_edge_lineitem_supplier(supp_ident, str(i), l_ident)
+    
 
 def execute_q1(date):
     print("Not implemented")
