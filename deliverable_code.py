@@ -21,7 +21,7 @@ def createPart(identifier, partkey, mfgr, type, size):
 def createSupplier(identifier, suppkey, name, address, phone, acctbal, comment, n_name, r_name):
     session.run("CREATE (" + identifier + ":Supplier {suppkey: '" + suppkey +
                 "', name: '" + name + "', address: '" + address +
-                "', phone: '" + phone + "', acctbal: '" + acctbal + "', comment: '" + comment +
+                "', phone: '" + phone + "', acctbal: " + acctbal + ", comment: '" + comment +
                 "', n_name: '" + n_name + "', r_name: '" + r_name + "'})")
 
 def create_order(identifier, orderkey, orderdate, shippriority, c_marketsegment, n_name):
@@ -31,8 +31,8 @@ def create_order(identifier, orderkey, orderdate, shippriority, c_marketsegment,
 def createLineitem(identifier, orderkey, suppkey, quantity, extendedPrice, 
                     discount, tax, returnflag, linestatus, shipdate):
     session.run("CREATE (" + identifier + ":LineItem {orderkey: '" + orderkey +
-                "', suppkey: '" + suppkey + "', quantity: '" + quantity + "', extendedPrice: '" + extendedPrice + "', discount: '" + discount + 
-                "', tax: '" + tax  +  "', returnflag: '" + returnflag + "', linestatus: '" + linestatus + "', shipdate: '" + shipdate + "'})")
+                "', suppkey: '" + suppkey + "', quantity: " + quantity + ", extendedPrice: " + extendedPrice + ", discount: " + discount + 
+                ", tax: " + tax  +  ", returnflag: '" + returnflag + "', linestatus: '" + linestatus + "', shipdate: '" + shipdate + "'})")
 
 def create_edge_supplier_part(supplier, suppkey, part, partkey, supplycost):
     session.run(
@@ -97,7 +97,8 @@ def initializeDB():
         shipdate = datetime(np.random.randint(2000, 2020), np.random.randint(1, 12), np.random.randint(1, 27))
         returnflag = random.choice(["W", "I", "D", "R"])
         linestatus = random.choice(["C", "E", "U", "P"])
-        createLineitem(l_ident, str(order_key), str(supp_key), str(quantity), str(extendedprice), str(discount), str(tax), str(returnflag), str(linestatus), str(shipdate))
+        createLineitem(l_ident, str(order_key), str(supp_key), str(quantity), str(extendedprice), str(discount), str(tax), 
+                        str(returnflag), str(linestatus), str(shipdate))
 
     for i in range(20):
         s_ident = "s" + str(i)
@@ -119,8 +120,17 @@ def initializeDB():
     
 
 def execute_q1(date):
-    print("Not implemented")
+    results = session.run(
+        "MATCH(l:LineItem) " + 
+        "WHERE(l.shipdate <= '" + str(date) + "') " + 
+        "RETURN l.returnflag as l_returnflag, l.linestatus as l_linestatus, SUM(l.quantity) as SUM_qty, " +
+            "SUM(l.extendedPrice) as SUM_base_price, SUM(l.extendedPrice*(1-l.discount)) as SUM_disc_price, " +
+            "SUM(l.extendedPrice*(1-l.discount)*(1+l.tax)) as SUM_charge, AVG(l.quantity) as avg_qty, " +  
+            "AVG(l.extendedPrice) as avg_price, AVG(l.discount) as avg_disc, count(*) as count_order " +  
+        "ORDER BY l.returnflag, l.linestatus")
 
+    for item in results:
+        print(item)
 
 def execute_q2(p_size, p_type, r_name):
     print("Not implemented")
@@ -136,8 +146,8 @@ def isDbEmpty():
         return False
     return True
 
-
 if __name__ == "__main__":
+    #Recordar crear indexos
     if (isDbEmpty()):
         initializeDB()
     value = printOptions()
