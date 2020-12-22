@@ -136,7 +136,15 @@ def execute_q2(p_size, p_type, r_name):
     print("Not implemented")
 
 def execute_q3(c_mkt, date_1, date_2):
-    print("Not implemented")
+    results = session.run(
+        "MATCH(o:Order)-[r:contains]->(l:LineItem) " +
+        "WHERE(o.orderdate < '" + str(date_1) + "' AND l.shipdate > '" + str(date_2) + "' AND o.c_marketsegment = '" + c_mkt + "') " +
+        "RETURN l.orderkey as l_orderkey, SUM(l.extendedPrice*(1-l.discount)) as revenue, o.orderdate as o_orderdate, o.shippriority as o_shippriority " +
+        "ORDER BY revenue DESC, o.orderdate"
+    )
+
+    for item in results:
+        print(item)
 
 def execute_q4(r_name, date):
     print("Not implemented")
