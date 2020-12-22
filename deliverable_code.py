@@ -15,37 +15,37 @@ def printOptions():
     return int(input("What do you want to do? "))
 
 def createPart(identifier, partkey, mfgr, type, size):
-    session.run("CREATE (" + identifier + ":Part {partkey:'" + partkey +
-                "', mfgr:'" + mfgr + "', type: '" + type + "', size: " + size + "})")
+    session.run("CREATE (" + identifier + ":Part {partkey:" + partkey +
+                ", mfgr:'" + mfgr + "', type: '" + type + "', size: " + size + "})")
 
 def createSupplier(identifier, suppkey, name, address, phone, acctbal, comment, n_name, r_name):
-    session.run("CREATE (" + identifier + ":Supplier {suppkey: '" + suppkey +
-                "', name: '" + name + "', address: '" + address +
+    session.run("CREATE (" + identifier + ":Supplier {suppkey: " + suppkey +
+                ", name: '" + name + "', address: '" + address +
                 "', phone: '" + phone + "', acctbal: " + acctbal + ", comment: '" + comment +
                 "', n_name: '" + n_name + "', r_name: '" + r_name + "'})")
 
 def create_order(identifier, orderkey, orderdate, shippriority, c_marketsegment, n_name):
-    session.run("CREATE (" + identifier + ":Order {orderkey: '" + orderkey + "', orderdate: '" + orderdate + "', shippriority:'" +
+    session.run("CREATE (" + identifier + ":Order {orderkey: " + orderkey + ", orderdate: '" + orderdate + "', shippriority:'" +
                 shippriority + "', c_marketsegment: '" + c_marketsegment + "', n_name: '" + n_name + "'})")
 
 def createLineitem(identifier, orderkey, suppkey, quantity, extendedPrice, 
                     discount, tax, returnflag, linestatus, shipdate):
-    session.run("CREATE (" + identifier + ":LineItem {orderkey: '" + orderkey +
-                "', suppkey: '" + suppkey + "', quantity: " + quantity + ", extendedPrice: " + extendedPrice + ", discount: " + discount + 
+    session.run("CREATE (" + identifier + ":LineItem {orderkey: " + orderkey +
+                ", suppkey: " + suppkey + ", quantity: " + quantity + ", extendedPrice: " + extendedPrice + ", discount: " + discount + 
                 ", tax: " + tax  +  ", returnflag: '" + returnflag + "', linestatus: '" + linestatus + "', shipdate: '" + shipdate + "'})")
 
 def create_edge_supplier_part(supplier, suppkey, part, partkey, supplycost):
     session.run(
-        "MATCH (" + supplier + ":Supplier {suppkey: '" + suppkey + "'}), (" + part + ":Part {partkey: '" + partkey +
-        "'}) CREATE (" + supplier + ")-[:partSupplier {supplycost: '" + supplycost + "'}]->(" + part + ")")
+        "MATCH (" + supplier + ":Supplier {suppkey: " + suppkey + "}), (" + part + ":Part {partkey: " + partkey +
+        "}) CREATE (" + supplier + ")-[:partSupplier {supplycost: " + supplycost + "}]->(" + part + ")")
 
 def create_edge_order_lineitem(order, orderkey, lineitem):
-    session.run("MATCH (" + order + ":Order {orderkey: '" + orderkey + "'}), (" + lineitem +
-                ":LineItem {orderkey: '" + orderkey + "'}) CREATE (" + order + ")-[:contains]->(" + lineitem + ")")
+    session.run("MATCH (" + order + ":Order {orderkey: " + orderkey + "}), (" + lineitem +
+                ":LineItem {orderkey: " + orderkey + "}) CREATE (" + order + ")-[:contains]->(" + lineitem + ")")
 
 def create_edge_lineitem_supplier(supplier, suppkey, lineitem):
-    session.run("MATCH (" + lineitem + ":LineItem {suppkey: '" + suppkey + "'}), (" + supplier +
-                ":Supplier {suppkey: '" + suppkey + "'}) CREATE (" + lineitem + ")-[:suppliedBy]->(" + supplier + ")")
+    session.run("MATCH (" + lineitem + ":LineItem {suppkey: " + suppkey + "}), (" + supplier +
+                ":Supplier {suppkey: " + suppkey + "}) CREATE (" + lineitem + ")-[:suppliedBy]->(" + supplier + ")")
 
 def initializeDB():
     print("Initializing DB!")
@@ -117,6 +117,18 @@ def initializeDB():
         l_ident = 'l' + str(i)
         supp_ident = "s" + str(i)
         create_edge_lineitem_supplier(supp_ident, str(i), l_ident)
+
+def part_supply_query_to_string(min_ps_part):
+    result = '('
+    counter = 0
+    for item in min_ps_part:
+        if counter == 0:
+            counter += 1
+        else:
+            result += " OR "
+        result += "(p.partkey = " + str(item[0]) + " AND ps.supplycost = " + str(item[1]) + ")"
+    result += ")"
+    return result
     
 
 def execute_q1(date):
@@ -128,16 +140,38 @@ def execute_q1(date):
             "SUM(l.extendedPrice*(1-l.discount)*(1+l.tax)) as SUM_charge, AVG(l.quantity) as avg_qty, " +  
             "AVG(l.extendedPrice) as avg_price, AVG(l.discount) as avg_disc, count(*) as count_order " +  
         "ORDER BY l.returnflag, l.linestatus")
+        
 
     counter = 0
     for item in results:
-        counter += 0
+        counter += 1
         print(item)
     if counter == 0:
         print("No nodes found")
 
 def execute_q2(p_size, p_type, r_name):
-    print("Not implemented")
+    min_ps_part = session.run(
+        "MATCH (s:Supplier)-[ps:partSupplier]->(p:Part) " + 
+        "WHERE (s.r_name = '" + r_name + "') " + 
+        "RETURN p.partkey, MIN(ps.supplycost) " +
+        "ORDER BY p.partkey"
+    )
+
+    part_supp = session.run(
+        "MATCH (s:Supplier)-[ps:partSupplier]->(p:Part) " +
+        "WHERE (s.r_name = '" + r_name + "' AND p.size= " + str(p_size) + " AND p.type =~ '.*" + p_type + "($)' AND " + 
+        part_supply_query_to_string(min_ps_part) + ") " +
+        "RETURN s.acctbal as s_acctbal, s.name as s_name, s.n_name as n_name, p.partkey as p_partkey, " + 
+        "p.mfgr as p_mfgr, s.address as s_address, s.phone as s_phone, s.comment as s_comment " +
+        "ORDER BY p.partkey"
+    )
+
+    counter = 0
+    for item in part_supp:
+        counter += 1
+        print(item)
+    if counter == 0:
+        print("No nodes found")
 
 def execute_q3(c_mkt, date_1, date_2):
     results = session.run(
@@ -149,7 +183,7 @@ def execute_q3(c_mkt, date_1, date_2):
 
     counter = 0
     for item in results:
-        counter += 0
+        counter += 1
         print(item)
     if counter == 0:
         print("No nodes found")
@@ -165,20 +199,26 @@ def execute_q4(r_name, date):
 
     counter = 0
     for item in results:
-        counter += 0
+        counter += 1
         print(item)
     if counter == 0:
         print("No nodes found")
     
-def isDbEmpty():
+def is_db_empty():
     for item in session.run('MATCH (n) RETURN 1 LIMIT 1'):
         return False
     return True
 
+def create_indexes():
+    session.run("CREATE INDEX ON :LineItem(shipdate)")
+    session.run("CREATE INDEX ON :Order(orderdate)")
+
+
 if __name__ == "__main__":
-    #Recordar crear indexos
-    if (isDbEmpty()):
+    if (is_db_empty()):
         initializeDB()
+        create_indexes()
+
     value = printOptions()
     while (value != -1):
         if (value == 1):
