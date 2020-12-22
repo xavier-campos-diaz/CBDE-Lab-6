@@ -147,7 +147,15 @@ def execute_q3(c_mkt, date_1, date_2):
         print(item)
 
 def execute_q4(r_name, date):
-    print("Not implemented")
+    results = session.run(
+        "MATCH (o:Order)-[:contains]->(l:LineItem)-[:suppliedBy]->(s:Supplier) " + 
+        "WHERE (s.r_name = '" + r_name + "' AND o.orderdate >= '" + str(date) + "' AND o.orderdate < '" + str(date.replace( year = date.year + 1)) + "') " + 
+        "RETURN o.n_name as n_name, SUM(l.extendedPrice*(1-l.discount)) as revenue " + 
+        "ORDER BY revenue DESC"
+    )
+
+    for item in results:
+        print(item)
     
 def isDbEmpty():
     for item in session.run('MATCH (n) RETURN 1 LIMIT 1'):
